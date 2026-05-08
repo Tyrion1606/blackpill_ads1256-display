@@ -1,0 +1,10 @@
+../Core/Src/adc_ads1256.c:14:6:AdcADS1256_SetPinsToSafeState	1
+../Core/Src/adc_ads1256.c:25:13:AdcADS1256_SelectAdcOnSpiBus	1
+../Core/Src/adc_ads1256.c:32:13:AdcADS1256_ReleaseAdcFromSpiBus	1
+../Core/Src/adc_ads1256.c:39:13:AdcADS1256_SendCommand	2
+../Core/Src/adc_ads1256.c:53:13:AdcADS1256_WriteSingleRegister	2
+../Core/Src/adc_ads1256.c:79:9:AdcADS1256_ReadSingleRegister	3
+../Core/Src/adc_ads1256.c:115:16:AdcADS1256_WaitUntilDataIsReadyWithTimeout	3
+../Core/Src/adc_ads1256.c:131:6:AdcADS1256_WaitUntilDataIsReady	2
+../Core/Src/adc_ads1256.c:140:6:AdcADS1256_Initialize	6
+../Core/Src/adc_ads1256.c:214:9:AdcADS1256_ReadRawSigned24BitValueContinuousMode	3

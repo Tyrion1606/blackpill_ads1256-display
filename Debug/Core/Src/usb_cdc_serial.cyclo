@@ -1,0 +1,2 @@
+../Core/Src/usb_cdc_serial.c:6:6:UsbCdcSerial_WriteBytesBlocking	3
+../Core/Src/usb_cdc_serial.c:23:6:UsbCdcSerial_WriteTextBlocking	1

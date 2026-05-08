@@ -1,0 +1,2 @@
+../Core/Src/microsecond_delay.c:3:6:MicrosecondDelay_Initialize	4	static
+../Core/Src/microsecond_delay.c:11:6:MicrosecondDelay_Wait	32	static,ignoring_inline_asm

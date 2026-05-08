@@ -1,0 +1,14 @@
+../Core/Src/display_st7735.c:17:6:DisplayST7735_SetPinsToSafeState	1
+../Core/Src/display_st7735.c:32:13:DisplayST7735_SelectDisplayOnSpiBus	1
+../Core/Src/display_st7735.c:39:13:DisplayST7735_ReleaseDisplayFromSpiBus	1
+../Core/Src/display_st7735.c:46:13:DisplayST7735_SetCommandMode	1
+../Core/Src/display_st7735.c:53:13:DisplayST7735_SetDataMode	1
+../Core/Src/display_st7735.c:60:13:DisplayST7735_WriteCommandByte	2
+../Core/Src/display_st7735.c:74:13:DisplayST7735_WriteDataByte	2
+../Core/Src/display_st7735.c:88:13:DisplayST7735_WriteDataBytes	2
+../Core/Src/display_st7735.c:107:13:DisplayST7735_HardwareReset	1
+../Core/Src/display_st7735.c:125:6:DisplayST7735_Initialize	1
+../Core/Src/display_st7735.c:154:13:DisplayST7735_SetAddressWindow	1
+../Core/Src/display_st7735.c:182:6:DisplayST7735_DrawPixel	3
+../Core/Src/display_st7735.c:204:6:DisplayST7735_DrawFilledRectangle	5
+../Core/Src/display_st7735.c:238:6:DisplayST7735_FillScreen	3
