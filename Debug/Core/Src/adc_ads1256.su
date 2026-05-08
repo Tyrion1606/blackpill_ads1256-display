@@ -7,4 +7,4 @@
 ../Core/Src/adc_ads1256.c:115:16:AdcADS1256_WaitUntilDataIsReadyWithTimeout	24	static
 ../Core/Src/adc_ads1256.c:131:6:AdcADS1256_WaitUntilDataIsReady	8	static,ignoring_inline_asm
 ../Core/Src/adc_ads1256.c:140:6:AdcADS1256_Initialize	96	static
-../Core/Src/adc_ads1256.c:214:9:AdcADS1256_ReadRawSigned24BitValueContinuousMode	32	static
+../Core/Src/adc_ads1256.c:215:9:AdcADS1256_ReadRawSigned24BitValueContinuousMode	32	static

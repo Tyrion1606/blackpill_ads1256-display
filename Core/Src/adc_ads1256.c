@@ -167,7 +167,8 @@ void AdcADS1256_Initialize(void)
                                  ADC_ADS1256_CHANNEL_AIN0_AGAINST_AINCOM);
 
   /* ADCON = 0x00: clock out desligado, sensor detect desligado e ganho PGA = 1. */
-  AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_ADCON, 0x00U);
+  //AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_ADCON, 0x00U);
+  AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_ADCON, ADC_ADS1256_SELECTED_PGA_GAIN);
 
   /* Define a taxa de amostragem configurada no .h. */
   AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_DRATE,
