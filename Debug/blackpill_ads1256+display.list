@@ -1572,11 +1572,11 @@ void AdcADS1256_Initialize(void)
     UsbCdcSerial_WriteTextBlocking("ERRO: MUX do ADS1256 diferente do esperado\r\n");
  800505c:	4819      	ldr	r0, [pc, #100]	@ (80050c4 <AdcADS1256_Initialize+0x12c>)
  800505e:	f000 ffde 	bl	800601e <UsbCdcSerial_WriteTextBlocking>
-    DisplayST7735_DrawText(5, 20, "ERRO: MUX do ADS1256\ndiferente do esperado", DISPLAY_COLOR_RED);
+    DisplayST7735_DrawText(2, 20, "ERRO: MUX do ADS1256\ndiferente do esperado", DISPLAY_COLOR_RED);
  8005062:	f44f 4378 	mov.w	r3, #63488	@ 0xf800
  8005066:	4a18      	ldr	r2, [pc, #96]	@ (80050c8 <AdcADS1256_Initialize+0x130>)
  8005068:	2114      	movs	r1, #20
- 800506a:	2005      	movs	r0, #5
+ 800506a:	2002      	movs	r0, #2
  800506c:	f000 fac0 	bl	80055f0 <DisplayST7735_DrawText>
 
     char displayMuxMessage[24];
@@ -3634,9 +3634,9 @@ void MX_SPI2_Init(void)
  8005cda:	4b0e      	ldr	r3, [pc, #56]	@ (8005d14 <MX_SPI2_Init+0x64>)
  8005cdc:	f44f 7200 	mov.w	r2, #512	@ 0x200
  8005ce0:	619a      	str	r2, [r3, #24]
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
  8005ce2:	4b0c      	ldr	r3, [pc, #48]	@ (8005d14 <MX_SPI2_Init+0x64>)
- 8005ce4:	2200      	movs	r2, #0
+ 8005ce4:	2220      	movs	r2, #32
  8005ce6:	61da      	str	r2, [r3, #28]
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
  8005ce8:	4b0a      	ldr	r3, [pc, #40]	@ (8005d14 <MX_SPI2_Init+0x64>)
