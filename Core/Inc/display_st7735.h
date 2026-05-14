@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include <stdint.h>
+#include <stddef.h>
 
 /* =========================
  * PINAGEM DO DISPLAY ST7735S
@@ -58,5 +59,6 @@ void DisplayST7735_DrawFilledRectangle(uint8_t startXPosition,
                                        uint8_t rectangleWidth,
                                        uint8_t rectangleHeight,
                                        uint16_t colorRgb565);
+void DisplayST7735_DrawText(uint16_t startX, uint16_t startY, const char *text, uint16_t textColor);
 
 #endif /* DISPLAY_ST7735_H */

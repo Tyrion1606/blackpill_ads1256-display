@@ -30,7 +30,7 @@ Core/Src/adc_ads1256.o: ../Core/Src/adc_ads1256.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Core/Inc/microsecond_delay.h ../Core/Inc/usb_cdc_serial.h \
- ../Core/Inc/spi.h
+ ../Core/Inc/spi.h ../Core/Inc/display_st7735.h
 ../Core/Inc/adc_ads1256.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -65,3 +65,4 @@ Core/Src/adc_ads1256.o: ../Core/Src/adc_ads1256.c \
 ../Core/Inc/microsecond_delay.h:
 ../Core/Inc/usb_cdc_serial.h:
 ../Core/Inc/spi.h:
+../Core/Inc/display_st7735.h:

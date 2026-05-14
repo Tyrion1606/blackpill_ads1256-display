@@ -12,3 +12,5 @@
 ../Core/Src/display_st7735.c:182:6:DisplayST7735_DrawPixel	24	static
 ../Core/Src/display_st7735.c:204:6:DisplayST7735_DrawFilledRectangle	32	static
 ../Core/Src/display_st7735.c:238:6:DisplayST7735_FillScreen	32	static
+../Core/Src/display_st7735.c:370:13:DisplayST7735_DrawCharacter5x7	40	static
+../Core/Src/display_st7735.c:397:6:DisplayST7735_DrawText	32	static

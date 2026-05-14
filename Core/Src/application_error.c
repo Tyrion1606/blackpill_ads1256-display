@@ -1,5 +1,6 @@
 #include "application_error.h"
 #include "application_config.h"
+#include "display_st7735.h"
 
 void ApplicationError_BlinkLedForeverFast(void)
 {
@@ -15,6 +16,7 @@ void ApplicationError_BlinkLedForeverFast(void)
 
 void Error_Handler(void)
 {
+  //DisplayST7735_FillScreen(DISPLAY_COLOR_RED);
   __disable_irq();
   ApplicationError_BlinkLedForeverFast();
 }

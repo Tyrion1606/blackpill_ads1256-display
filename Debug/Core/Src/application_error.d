@@ -29,7 +29,7 @@ Core/Src/application_error.o: ../Core/Src/application_error.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/application_config.h
+ ../Core/Inc/application_config.h ../Core/Inc/display_st7735.h
 ../Core/Inc/application_error.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -62,3 +62,4 @@ Core/Src/application_error.o: ../Core/Src/application_error.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 ../Core/Inc/application_config.h:
+../Core/Inc/display_st7735.h:

@@ -59,12 +59,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_C13_Pin GPIO_PIN_13
 #define LED_C13_GPIO_Port GPIOC
-#define ADS_PDWN_Pin GPIO_PIN_0
-#define ADS_PDWN_GPIO_Port GPIOB
-#define ADS_DRDY_Pin GPIO_PIN_1
-#define ADS_DRDY_GPIO_Port GPIOB
 #define ADS_CS_Pin GPIO_PIN_12
 #define ADS_CS_GPIO_Port GPIOB
+#define ADS_DRDY_Pin GPIO_PIN_8
+#define ADS_DRDY_GPIO_Port GPIOA
+#define ADS_PDWN_Pin GPIO_PIN_9
+#define ADS_PDWN_GPIO_Port GPIOA
 #define LCD_CS_Pin GPIO_PIN_4
 #define LCD_CS_GPIO_Port GPIOB
 #define LCD_DC_Pin GPIO_PIN_6

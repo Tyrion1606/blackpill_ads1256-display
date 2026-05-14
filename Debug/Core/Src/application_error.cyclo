@@ -1,2 +1,2 @@
-../Core/Src/application_error.c:4:6:ApplicationError_BlinkLedForeverFast	1
-../Core/Src/application_error.c:16:6:Error_Handler	1
+../Core/Src/application_error.c:5:6:ApplicationError_BlinkLedForeverFast	1
+../Core/Src/application_error.c:17:6:Error_Handler	1

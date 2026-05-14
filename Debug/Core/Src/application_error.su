@@ -1,2 +1,2 @@
-../Core/Src/application_error.c:4:6:ApplicationError_BlinkLedForeverFast	8	static
-../Core/Src/application_error.c:16:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/application_error.c:5:6:ApplicationError_BlinkLedForeverFast	8	static
+../Core/Src/application_error.c:17:6:Error_Handler	8	static,ignoring_inline_asm

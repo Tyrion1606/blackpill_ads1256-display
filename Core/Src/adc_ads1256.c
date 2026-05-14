@@ -2,8 +2,10 @@
 #include "microsecond_delay.h"
 #include "usb_cdc_serial.h"
 #include "spi.h"
+#include "display_st7735.h"
 
 #include <stdio.h>
+
 
 static void AdcADS1256_SelectAdcOnSpiBus(void);
 static void AdcADS1256_ReleaseAdcFromSpiBus(void);
@@ -201,15 +203,29 @@ void AdcADS1256_Initialize(void)
   if (muxRegisterValueReadBack != ADC_ADS1256_CHANNEL_AIN0_AGAINST_AINCOM)
   {
     UsbCdcSerial_WriteTextBlocking("ERRO: MUX do ADS1256 diferente do esperado\r\n");
+    DisplayST7735_DrawText(2, 20, "ERRO: MUX do ADS1256\ndiferente do esperado", DISPLAY_COLOR_RED);
+
+    char displayMuxMessage[24];
+
+    snprintf(displayMuxMessage,
+             sizeof(displayMuxMessage),
+             "MUX: 0x%02X",
+             muxRegisterValueReadBack);
+
+    DisplayST7735_DrawText(5, 40, displayMuxMessage, DISPLAY_COLOR_WHITE);
     Error_Handler();
   }
+
+  DisplayST7735_DrawText(5, 5, "ADS1256 OK", 0xFFFF);   // branco
 
   /*
    * Entra em modo de leitura continua.
    * Depois disso, a cada DRDY em nivel baixo, basta gerar clock SPI e ler 3 bytes.
    */
   AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_READ_DATA_CONT);
+
   MicrosecondDelay_Wait(10);
+
 }
 
 int32_t AdcADS1256_ReadRawSigned24BitValueContinuousMode(void)
