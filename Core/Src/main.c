@@ -13,16 +13,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct
-{
-  char text[USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES];
-  uint16_t usedLengthInBytes;
-} UsbSerialTextBuffer;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -48,10 +42,6 @@ void SystemClock_Config(void);
 static void Application_SetVectorTableToStartAfterWeActBootloader(void);
 static void Application_SetInitialPinStates(void);
 static void Application_DrawDisplaySelfTest(void);
-static void Application_AddTextToUsbBufferAndFlushIfNeeded(UsbSerialTextBuffer *usbSerialTextBuffer,
-                                                           const char *textToAppend,
-                                                           uint16_t textLengthInBytes);
-static void Application_FlushUsbBufferIfNotEmpty(UsbSerialTextBuffer *usbSerialTextBuffer);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -114,8 +104,6 @@ int main(void)
   AdcADS1256_Initialize();
   UsbCdcSerial_WriteTextBlocking("ADS1256 OK. Iniciando leitura.\r\n");
   UsbCdcSerial_WriteTextBlocking("Formato CSV: FRAME,seq,t,d1,d2,d3,d4\r\n");
-  UsbSerialTextBuffer usbSerialTextBuffer;
-  memset(&usbSerialTextBuffer, 0, sizeof(usbSerialTextBuffer));
 
   uint32_t sampleSequenceNumber = 0;
 
@@ -142,21 +130,12 @@ int main(void)
     {
       uint16_t csvLineLengthInBytes = (uint16_t)numberOfCharactersWrittenToCsvLine;
 
-      Application_AddTextToUsbBufferAndFlushIfNeeded(&usbSerialTextBuffer,
-                                                     csvLineText,
-                                                     csvLineLengthInBytes);
-    }
-
-    sampleSequenceNumber++;
-
-    if (usbSerialTextBuffer.usedLengthInBytes >
-        (USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES - USB_SERIAL_FLUSH_MARGIN_BYTES))
-    {
-      Application_FlushUsbBufferIfNotEmpty(&usbSerialTextBuffer);
-
+      UsbCdcSerial_WriteBytesBlocking(csvLineText, csvLineLengthInBytes);
       HAL_GPIO_TogglePin(APPLICATION_LED_GPIO_PORT,
                          APPLICATION_LED_GPIO_PIN);
     }
+
+    sampleSequenceNumber++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -241,44 +220,5 @@ static void Application_DrawDisplaySelfTest(void)
   DisplayST7735_DrawFilledRectangle(35, 5, 10, 10, DISPLAY_COLOR_YELLOW);
 }
 
-static void Application_AddTextToUsbBufferAndFlushIfNeeded(UsbSerialTextBuffer *usbSerialTextBuffer,
-                                                           const char *textToAppend,
-                                                           uint16_t textLengthInBytes)
-{
-  if (textLengthInBytes >= USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES)
-  {
-    Application_FlushUsbBufferIfNotEmpty(usbSerialTextBuffer);
-    UsbCdcSerial_WriteBytesBlocking(textToAppend, textLengthInBytes);
-    return;
-  }
-
-  uint16_t freeSpaceInUsbBuffer = USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES -
-                                  usbSerialTextBuffer->usedLengthInBytes;
-
-  if (textLengthInBytes > freeSpaceInUsbBuffer)
-  {
-    Application_FlushUsbBufferIfNotEmpty(usbSerialTextBuffer);
-  }
-
-  char *destinationInsideUsbBuffer = usbSerialTextBuffer->text +
-                                     usbSerialTextBuffer->usedLengthInBytes;
-
-  memcpy(destinationInsideUsbBuffer, textToAppend, textLengthInBytes);
-
-  usbSerialTextBuffer->usedLengthInBytes += textLengthInBytes;
-}
-
-static void Application_FlushUsbBufferIfNotEmpty(UsbSerialTextBuffer *usbSerialTextBuffer)
-{
-  if (usbSerialTextBuffer->usedLengthInBytes == 0U)
-  {
-    return;
-  }
-
-  UsbCdcSerial_WriteBytesBlocking(usbSerialTextBuffer->text,
-                                  usbSerialTextBuffer->usedLengthInBytes);
-
-  usbSerialTextBuffer->usedLengthInBytes = 0U;
-}
 /* USER CODE END 4 */
 

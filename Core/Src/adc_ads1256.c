@@ -247,10 +247,15 @@ static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
 {
   char cyclingReadRateText[16];
   char cyclingFrameRateText[16];
+  char cyclingReadRateAt1500KHzText[16];
+  char cyclingFrameRateAt1500KHzText[16];
   char displayLineText[32];
 
   uint32_t cyclingFrameRateCenti =
       ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_CENTI /
+      ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
+  uint32_t cyclingFrameRateAt1500KHzCenti =
+      ADC_ADS1256_SELECTED_CYCLING_READS_AT_1500KHZ_CENTI /
       ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
 
   AdcADS1256_FormatFixedPointCenti(cyclingReadRateText,
@@ -260,37 +265,56 @@ static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
   AdcADS1256_FormatFixedPointCenti(cyclingFrameRateText,
                                    sizeof(cyclingFrameRateText),
                                    cyclingFrameRateCenti);
+  AdcADS1256_FormatFixedPointCenti(cyclingReadRateAt1500KHzText,
+                                   sizeof(cyclingReadRateAt1500KHzText),
+                                   ADC_ADS1256_SELECTED_CYCLING_READS_AT_1500KHZ_CENTI);
+
+  AdcADS1256_FormatFixedPointCenti(cyclingFrameRateAt1500KHzText,
+                                   sizeof(cyclingFrameRateAt1500KHzText),
+                                   cyclingFrameRateAt1500KHzCenti);
 
   DisplayST7735_DrawText(2, 5, "ADS1256 Inicializado", DISPLAY_COLOR_WHITE);
-  DisplayST7735_DrawText(2, 20, "Modo: 4 pares dif", DISPLAY_COLOR_CYAN);
-  DisplayST7735_DrawText(2, 35, "Pares: 0-1 2-3 4-5 6-7", DISPLAY_COLOR_CYAN);
+  DisplayST7735_DrawText(2, 15, "Modo: 4 pares dif", DISPLAY_COLOR_CYAN);
+  DisplayST7735_DrawText(2, 25, "Pares: 01 23 45 67", DISPLAY_COLOR_CYAN);
 
   snprintf(displayLineText,
            sizeof(displayLineText),
            "DRATE: %lu SPS",
            (unsigned long)ADC_ADS1256_SELECTED_DATA_RATE_SPS);
-  DisplayST7735_DrawText(2, 50, displayLineText, DISPLAY_COLOR_WHITE);
+  DisplayST7735_DrawText(2, 35, displayLineText, DISPLAY_COLOR_WHITE);
 
   snprintf(displayLineText,
            sizeof(displayLineText),
            "PGA: x%u",
            (1U << ADC_ADS1256_SELECTED_PGA_GAIN));
-  DisplayST7735_DrawText(2, 65, displayLineText, DISPLAY_COLOR_WHITE);
+  DisplayST7735_DrawText(2, 45, displayLineText, DISPLAY_COLOR_WHITE);
 
   snprintf(displayLineText,
            sizeof(displayLineText),
            "MUX: %s leit/s",
            cyclingReadRateText);
-  DisplayST7735_DrawText(2, 80, displayLineText, DISPLAY_COLOR_YELLOW);
+  DisplayST7735_DrawText(2, 60, displayLineText, DISPLAY_COLOR_YELLOW);
+
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "(1.5Mhz: %s)",
+           cyclingReadRateAt1500KHzText);
+  DisplayST7735_DrawText(2, 70, displayLineText, DISPLAY_COLOR_YELLOW);
 
   snprintf(displayLineText,
            sizeof(displayLineText),
            "Frame: %s leit/s",
            cyclingFrameRateText);
-  DisplayST7735_DrawText(2, 95, displayLineText, DISPLAY_COLOR_YELLOW);
+  DisplayST7735_DrawText(2, 80, displayLineText, DISPLAY_COLOR_YELLOW);
 
-  DisplayST7735_DrawText(2, 110, "CSV format:", DISPLAY_COLOR_GREEN);
-  DisplayST7735_DrawText(2, 125, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "(1.5Mhz: %s)",
+           cyclingFrameRateAt1500KHzText);
+  DisplayST7735_DrawText(2, 90, displayLineText, DISPLAY_COLOR_YELLOW);
+
+  DisplayST7735_DrawText(2, 105, "CSV format:", DISPLAY_COLOR_GREEN);
+  DisplayST7735_DrawText(2, 115, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
 }
 
 static void AdcADS1256_FormatFixedPointCenti(char *destinationText,
