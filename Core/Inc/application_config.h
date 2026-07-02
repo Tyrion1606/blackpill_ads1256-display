@@ -26,12 +26,12 @@
  * Tamanho do buffer usado para acumular varias linhas CSV antes de enviar pela USB.
  * Enviar em blocos reduz o overhead em comparacao com enviar uma linha por vez.
  */
-#define USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES 256U //4096U
+#define USB_SERIAL_TRANSMIT_BUFFER_SIZE_BYTES 4096U //4096U
 
 /*
  * Quando sobrar menos que esta margem no buffer, a aplicacao envia o conteudo
  * acumulado pela USB e zera o buffer.
  */
-#define USB_SERIAL_FLUSH_MARGIN_BYTES 256U //64U
+#define USB_SERIAL_FLUSH_MARGIN_BYTES 64U //64U
 
 #endif /* APPLICATION_CONFIG_H */
