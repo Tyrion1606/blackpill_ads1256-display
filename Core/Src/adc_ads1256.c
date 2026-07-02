@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 
+#define ADC_ADS1256_COMMAND_SETTLE_DELAY_US        4U
+#define ADC_ADS1256_REGISTER_WRITE_SETTLE_DELAY_US 2U
+#define ADC_ADS1256_RDATA_RESPONSE_DELAY_US        7U
 
 static void AdcADS1256_SelectAdcOnSpiBus(void);
 static void AdcADS1256_ReleaseAdcFromSpiBus(void);
@@ -18,6 +21,7 @@ static void AdcADS1256_FormatFixedPointCenti(char *destinationText,
                                              uint32_t valueTimesOneHundred);
 static int32_t AdcADS1256_ConvertThreeBytesToSigned24BitValue(const uint8_t adcResponseBytes[3]);
 static int32_t AdcADS1256_ReadRawSigned24BitValueSingleMode(void);
+static void AdcADS1256_StartConversionOnChannel(uint8_t channelIndex);
 
 const AdcADS1256_ChannelConfig AdcADS1256_DifferentialChannels[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT] = {
     {ADC_ADS1256_CHANNEL_AIN0_AGAINST_AIN1, "AIN0-AIN1"},
@@ -62,7 +66,7 @@ static void AdcADS1256_SendCommand(uint8_t commandByte)
   }
 
   AdcADS1256_ReleaseAdcFromSpiBus();
-  MicrosecondDelay_Wait(10);
+  MicrosecondDelay_Wait(ADC_ADS1256_COMMAND_SETTLE_DELAY_US);
 }
 
 static void AdcADS1256_WriteSingleRegister(uint8_t registerAddress, uint8_t registerValue)
@@ -88,7 +92,7 @@ static void AdcADS1256_WriteSingleRegister(uint8_t registerAddress, uint8_t regi
   }
 
   AdcADS1256_ReleaseAdcFromSpiBus();
-  MicrosecondDelay_Wait(10);
+  MicrosecondDelay_Wait(ADC_ADS1256_REGISTER_WRITE_SETTLE_DELAY_US);
 }
 
 uint8_t AdcADS1256_ReadSingleRegister(uint8_t registerAddress)
@@ -333,7 +337,7 @@ static int32_t AdcADS1256_ReadRawSigned24BitValueSingleMode(void)
     Error_Handler();
   }
 
-  MicrosecondDelay_Wait(10);
+  MicrosecondDelay_Wait(ADC_ADS1256_RDATA_RESPONSE_DELAY_US);
 
   if (HAL_SPI_TransmitReceive(&hspi2,
                               dummyBytesSentOnlyToGenerateSpiClock,
@@ -358,6 +362,51 @@ int32_t AdcADS1256_ReadRawSigned24BitValueFromChannel(uint8_t muxRegisterValue)
   AdcADS1256_WaitUntilDataIsReady();
 
   return AdcADS1256_ReadRawSigned24BitValueSingleMode();
+}
+
+static void AdcADS1256_StartConversionOnChannel(uint8_t channelIndex)
+{
+  AdcADS1256_WriteSingleRegister(
+      ADC_ADS1256_REGISTER_MUX,
+      AdcADS1256_DifferentialChannels[channelIndex].muxRegisterValue);
+
+  AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_SYNC);
+  AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_WAKEUP);
+}
+
+void AdcADS1256_ReadDifferentialChannelFrame(int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT])
+{
+  static uint8_t isPipelineInitialized = 0U;
+  static uint8_t readyChannelIndex = 0U;
+
+  if (isPipelineInitialized == 0U)
+  {
+    readyChannelIndex = 0U;
+    AdcADS1256_StartConversionOnChannel(readyChannelIndex);
+    AdcADS1256_WaitUntilDataIsReady();
+    isPipelineInitialized = 1U;
+  }
+
+  for (uint8_t sampleIndex = 0U;
+       sampleIndex < ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
+       sampleIndex++)
+  {
+    uint8_t channelIndexToRead = readyChannelIndex;
+    uint8_t nextChannelIndex = (uint8_t)(channelIndexToRead + 1U);
+
+    if (nextChannelIndex >= ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT)
+    {
+      nextChannelIndex = 0U;
+    }
+
+    AdcADS1256_WaitUntilDataIsReady();
+    AdcADS1256_StartConversionOnChannel(nextChannelIndex);
+
+    adcRawSignedValues[channelIndexToRead] =
+        AdcADS1256_ReadRawSigned24BitValueSingleMode();
+
+    readyChannelIndex = nextChannelIndex;
+  }
 }
 
 int32_t AdcADS1256_ReadRawSigned24BitValueContinuousMode(void)

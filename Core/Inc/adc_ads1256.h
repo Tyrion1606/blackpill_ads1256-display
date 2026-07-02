@@ -126,6 +126,7 @@ void AdcADS1256_Initialize(void);
 void AdcADS1256_WaitUntilDataIsReady(void);
 int32_t AdcADS1256_ReadRawSigned24BitValueContinuousMode(void);
 int32_t AdcADS1256_ReadRawSigned24BitValueFromChannel(uint8_t muxRegisterValue);
+void AdcADS1256_ReadDifferentialChannelFrame(int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT]);
 uint8_t AdcADS1256_ReadSingleRegister(uint8_t registerAddress);
 
 #endif /* ADC_ADS1256_H */

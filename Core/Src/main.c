@@ -124,14 +124,7 @@ int main(void)
     int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT];
     uint32_t acquisitionTimestampMilliseconds = HAL_GetTick();
 
-    for (uint8_t channelIndex = 0U;
-         channelIndex < ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
-         channelIndex++)
-    {
-      adcRawSignedValues[channelIndex] =
-          AdcADS1256_ReadRawSigned24BitValueFromChannel(
-              AdcADS1256_DifferentialChannels[channelIndex].muxRegisterValue);
-    }
+    AdcADS1256_ReadDifferentialChannelFrame(adcRawSignedValues);
 
     char csvLineText[128];
     int numberOfCharactersWrittenToCsvLine = snprintf(csvLineText,
