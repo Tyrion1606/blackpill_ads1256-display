@@ -13,9 +13,9 @@ static void AdcADS1256_SendCommand(uint8_t commandByte);
 static void AdcADS1256_WriteSingleRegister(uint8_t registerAddress, uint8_t registerValue);
 static uint8_t AdcADS1256_WaitUntilDataIsReadyWithTimeout(uint32_t timeoutInMilliseconds);
 static void AdcADS1256_DrawOperatingStatusOnDisplay(void);
-static void AdcADS1256_FormatFixedPointTenths(char *destinationText,
-                                              size_t destinationTextSize,
-                                              uint32_t valueTimesTen);
+static void AdcADS1256_FormatFixedPointCenti(char *destinationText,
+                                             size_t destinationTextSize,
+                                             uint32_t valueTimesOneHundred);
 static int32_t AdcADS1256_ConvertThreeBytesToSigned24BitValue(const uint8_t adcResponseBytes[3]);
 static int32_t AdcADS1256_ReadRawSigned24BitValueSingleMode(void);
 
@@ -239,39 +239,23 @@ void AdcADS1256_Initialize(void)
 
 }
 
-static void AdcADS1256_FormatFixedPointTenths(char *destinationText,
-                                              size_t destinationTextSize,
-                                              uint32_t valueTimesTen)
-{
-  snprintf(destinationText,
-           destinationTextSize,
-           "%lu.%lu",
-           (unsigned long)(valueTimesTen / 10U),
-           (unsigned long)(valueTimesTen % 10U));
-}
-
 static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
 {
-  char dataRateText[16];
   char cyclingReadRateText[16];
   char cyclingFrameRateText[16];
   char displayLineText[32];
 
-  uint32_t cyclingFrameRateTimesTen =
-      ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_X10 /
+  uint32_t cyclingFrameRateCenti =
+      ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_CENTI /
       ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
 
-  AdcADS1256_FormatFixedPointTenths(dataRateText,
-                                    sizeof(dataRateText),
-                                    ADC_ADS1256_SELECTED_DATA_RATE_SPS_X10);
+  AdcADS1256_FormatFixedPointCenti(cyclingReadRateText,
+                                   sizeof(cyclingReadRateText),
+                                   ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_CENTI);
 
-  AdcADS1256_FormatFixedPointTenths(cyclingReadRateText,
-                                    sizeof(cyclingReadRateText),
-                                    ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_X10);
-
-  AdcADS1256_FormatFixedPointTenths(cyclingFrameRateText,
-                                    sizeof(cyclingFrameRateText),
-                                    cyclingFrameRateTimesTen);
+  AdcADS1256_FormatFixedPointCenti(cyclingFrameRateText,
+                                   sizeof(cyclingFrameRateText),
+                                   cyclingFrameRateCenti);
 
   DisplayST7735_DrawText(2, 5, "ADS1256 Inicializado", DISPLAY_COLOR_WHITE);
   DisplayST7735_DrawText(2, 20, "Modo: 4 pares dif", DISPLAY_COLOR_CYAN);
@@ -279,8 +263,8 @@ static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
 
   snprintf(displayLineText,
            sizeof(displayLineText),
-           "DRATE: %s SPS",
-           dataRateText);
+           "DRATE: %lu SPS",
+           (unsigned long)ADC_ADS1256_SELECTED_DATA_RATE_SPS);
   DisplayST7735_DrawText(2, 50, displayLineText, DISPLAY_COLOR_WHITE);
 
   snprintf(displayLineText,
@@ -303,6 +287,17 @@ static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
 
   DisplayST7735_DrawText(2, 110, "CSV format:", DISPLAY_COLOR_GREEN);
   DisplayST7735_DrawText(2, 125, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
+}
+
+static void AdcADS1256_FormatFixedPointCenti(char *destinationText,
+                                             size_t destinationTextSize,
+                                             uint32_t valueTimesOneHundred)
+{
+  snprintf(destinationText,
+           destinationTextSize,
+           "%lu.%02lu",
+           (unsigned long)(valueTimesOneHundred / 100U),
+           (unsigned long)(valueTimesOneHundred % 100U));
 }
 
 static int32_t AdcADS1256_ConvertThreeBytesToSigned24BitValue(const uint8_t adcResponseBytes[3])
