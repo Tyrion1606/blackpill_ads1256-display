@@ -1,7 +1,7 @@
-../Core/Src/main.c:66:5:main	4216	static
-../Core/Src/main.c:195:6:SystemClock_Config	88	static
-../Core/Src/main.c:237:13:Application_SetVectorTableToStartAfterWeActBootloader	4	static,ignoring_inline_asm
-../Core/Src/main.c:248:13:Application_SetInitialPinStates	8	static
-../Core/Src/main.c:258:13:Application_DrawDisplaySelfTest	16	static
-../Core/Src/main.c:267:13:Application_AddTextToUsbBufferAndFlushIfNeeded	32	static
-../Core/Src/main.c:294:13:Application_FlushUsbBufferIfNotEmpty	16	static
+../Core/Src/main.c:66:5:main	464	static
+../Core/Src/main.c:179:6:SystemClock_Config	88	static
+../Core/Src/main.c:221:13:Application_SetVectorTableToStartAfterWeActBootloader	4	static,ignoring_inline_asm
+../Core/Src/main.c:232:13:Application_SetInitialPinStates	8	static
+../Core/Src/main.c:242:13:Application_DrawDisplaySelfTest	16	static
+../Core/Src/main.c:251:13:Application_AddTextToUsbBufferAndFlushIfNeeded	32	static
+../Core/Src/main.c:278:13:Application_FlushUsbBufferIfNotEmpty	16	static

@@ -13,4 +13,4 @@
 ../Core/Src/display_st7735.c:204:6:DisplayST7735_DrawFilledRectangle	5
 ../Core/Src/display_st7735.c:238:6:DisplayST7735_FillScreen	3
 ../Core/Src/display_st7735.c:370:13:DisplayST7735_DrawCharacter5x7	6
-../Core/Src/display_st7735.c:397:6:DisplayST7735_DrawText	4
+../Core/Src/display_st7735.c:397:6:DisplayST7735_DrawText	6

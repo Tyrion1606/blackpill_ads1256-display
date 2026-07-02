@@ -12,6 +12,19 @@ static void AdcADS1256_ReleaseAdcFromSpiBus(void);
 static void AdcADS1256_SendCommand(uint8_t commandByte);
 static void AdcADS1256_WriteSingleRegister(uint8_t registerAddress, uint8_t registerValue);
 static uint8_t AdcADS1256_WaitUntilDataIsReadyWithTimeout(uint32_t timeoutInMilliseconds);
+static void AdcADS1256_DrawOperatingStatusOnDisplay(void);
+static void AdcADS1256_FormatFixedPointTenths(char *destinationText,
+                                              size_t destinationTextSize,
+                                              uint32_t valueTimesTen);
+static int32_t AdcADS1256_ConvertThreeBytesToSigned24BitValue(const uint8_t adcResponseBytes[3]);
+static int32_t AdcADS1256_ReadRawSigned24BitValueSingleMode(void);
+
+const AdcADS1256_ChannelConfig AdcADS1256_DifferentialChannels[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT] = {
+    {ADC_ADS1256_CHANNEL_AIN0_AGAINST_AIN1, "AIN0-AIN1"},
+    {ADC_ADS1256_CHANNEL_AIN2_AGAINST_AIN3, "AIN2-AIN3"},
+    {ADC_ADS1256_CHANNEL_AIN4_AGAINST_AIN5, "AIN4-AIN5"},
+    {ADC_ADS1256_CHANNEL_AIN6_AGAINST_AIN7, "AIN6-AIN7"}
+};
 
 void AdcADS1256_SetPinsToSafeState(void)
 {
@@ -164,9 +177,9 @@ void AdcADS1256_Initialize(void)
   AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_STOP_READ_CONT);
   HAL_Delay(2);
 
-  /* Seleciona entrada AIN0 medida contra AINCOM. */
+  /* Seleciona o canal configurado no .h. */
   AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_MUX,
-                                 ADC_ADS1256_CHANNEL_AIN0_AGAINST_AINCOM);
+                                 ADC_ADS1256_SELECTED_CHANNEL);
 
   /* ADCON = 0x00: clock out desligado, sensor detect desligado e ganho PGA = 1. */
   //AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_ADCON, 0x00U);
@@ -200,7 +213,7 @@ void AdcADS1256_Initialize(void)
                                     (uint16_t)numberOfCharactersWritten);
   }
 
-  if (muxRegisterValueReadBack != ADC_ADS1256_CHANNEL_AIN0_AGAINST_AINCOM)
+  if (muxRegisterValueReadBack != ADC_ADS1256_SELECTED_CHANNEL)
   {
     UsbCdcSerial_WriteTextBlocking("ERRO: MUX do ADS1256 diferente do esperado\r\n");
     DisplayST7735_DrawText(2, 20, "ERRO: MUX do ADS1256\ndiferente do esperado", DISPLAY_COLOR_RED);
@@ -212,20 +225,144 @@ void AdcADS1256_Initialize(void)
              "MUX: 0x%02X",
              muxRegisterValueReadBack);
 
-    DisplayST7735_DrawText(5, 40, displayMuxMessage, DISPLAY_COLOR_WHITE);
+    DisplayST7735_DrawText(2, 40, displayMuxMessage, DISPLAY_COLOR_WHITE);
     Error_Handler();
   }
 
-  DisplayST7735_DrawText(5, 5, "ADS1256 OK", 0xFFFF);   // branco
+  AdcADS1256_DrawOperatingStatusOnDisplay();
 
   /*
-   * Entra em modo de leitura continua.
-   * Depois disso, a cada DRDY em nivel baixo, basta gerar clock SPI e ler 3 bytes.
+   * Mantem o ADS1256 em modo RDATA para permitir troca do MUX entre leituras.
+   * O modo RDATAC nao e usado na varredura dos quatro canais diferenciais.
    */
-  AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_READ_DATA_CONT);
+  MicrosecondDelay_Wait(10);
+
+}
+
+static void AdcADS1256_FormatFixedPointTenths(char *destinationText,
+                                              size_t destinationTextSize,
+                                              uint32_t valueTimesTen)
+{
+  snprintf(destinationText,
+           destinationTextSize,
+           "%lu.%lu",
+           (unsigned long)(valueTimesTen / 10U),
+           (unsigned long)(valueTimesTen % 10U));
+}
+
+static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
+{
+  char dataRateText[16];
+  char cyclingReadRateText[16];
+  char cyclingFrameRateText[16];
+  char displayLineText[32];
+
+  uint32_t cyclingFrameRateTimesTen =
+      ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_X10 /
+      ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
+
+  AdcADS1256_FormatFixedPointTenths(dataRateText,
+                                    sizeof(dataRateText),
+                                    ADC_ADS1256_SELECTED_DATA_RATE_SPS_X10);
+
+  AdcADS1256_FormatFixedPointTenths(cyclingReadRateText,
+                                    sizeof(cyclingReadRateText),
+                                    ADC_ADS1256_SELECTED_CYCLING_READS_PER_SECOND_X10);
+
+  AdcADS1256_FormatFixedPointTenths(cyclingFrameRateText,
+                                    sizeof(cyclingFrameRateText),
+                                    cyclingFrameRateTimesTen);
+
+  DisplayST7735_DrawText(2, 5, "ADS1256 Inicializado", DISPLAY_COLOR_WHITE);
+  DisplayST7735_DrawText(2, 20, "Modo: 4 pares dif", DISPLAY_COLOR_CYAN);
+  DisplayST7735_DrawText(2, 35, "Pares: 0-1 2-3 4-5 6-7", DISPLAY_COLOR_CYAN);
+
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "DRATE: %s SPS",
+           dataRateText);
+  DisplayST7735_DrawText(2, 50, displayLineText, DISPLAY_COLOR_WHITE);
+
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "PGA: x%u",
+           (1U << ADC_ADS1256_SELECTED_PGA_GAIN));
+  DisplayST7735_DrawText(2, 65, displayLineText, DISPLAY_COLOR_WHITE);
+
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "MUX: %s leit/s",
+           cyclingReadRateText);
+  DisplayST7735_DrawText(2, 80, displayLineText, DISPLAY_COLOR_YELLOW);
+
+  snprintf(displayLineText,
+           sizeof(displayLineText),
+           "Frame: %s leit/s",
+           cyclingFrameRateText);
+  DisplayST7735_DrawText(2, 95, displayLineText, DISPLAY_COLOR_YELLOW);
+
+  DisplayST7735_DrawText(2, 110, "CSV format:", DISPLAY_COLOR_GREEN);
+  DisplayST7735_DrawText(2, 125, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
+}
+
+static int32_t AdcADS1256_ConvertThreeBytesToSigned24BitValue(const uint8_t adcResponseBytes[3])
+{
+  int32_t rawSigned24BitValue = ((int32_t)adcResponseBytes[0] << 16) |
+                                ((int32_t)adcResponseBytes[1] << 8)  |
+                                ((int32_t)adcResponseBytes[2]);
+
+  /*
+   * O ADS1256 retorna numero assinado em 24 bits.
+   * Se o bit 23 estiver setado, o valor e negativo e precisa de extensao de sinal
+   * para virar um int32_t correto.
+   */
+  if ((rawSigned24BitValue & 0x00800000L) != 0)
+  {
+    rawSigned24BitValue |= 0xFF000000L;
+  }
+
+  return rawSigned24BitValue;
+}
+
+static int32_t AdcADS1256_ReadRawSigned24BitValueSingleMode(void)
+{
+  uint8_t readDataCommand = ADC_ADS1256_COMMAND_READ_DATA;
+  uint8_t dummyBytesSentOnlyToGenerateSpiClock[3] = {0xFFU, 0xFFU, 0xFFU};
+  uint8_t adcResponseBytes[3] = {0x00U, 0x00U, 0x00U};
+
+  AdcADS1256_SelectAdcOnSpiBus();
+
+  if (HAL_SPI_Transmit(&hspi2, &readDataCommand, 1, HAL_MAX_DELAY) != HAL_OK)
+  {
+    AdcADS1256_ReleaseAdcFromSpiBus();
+    Error_Handler();
+  }
 
   MicrosecondDelay_Wait(10);
 
+  if (HAL_SPI_TransmitReceive(&hspi2,
+                              dummyBytesSentOnlyToGenerateSpiClock,
+                              adcResponseBytes,
+                              sizeof(adcResponseBytes),
+                              HAL_MAX_DELAY) != HAL_OK)
+  {
+    AdcADS1256_ReleaseAdcFromSpiBus();
+    Error_Handler();
+  }
+
+  AdcADS1256_ReleaseAdcFromSpiBus();
+
+  return AdcADS1256_ConvertThreeBytesToSigned24BitValue(adcResponseBytes);
+}
+
+int32_t AdcADS1256_ReadRawSigned24BitValueFromChannel(uint8_t muxRegisterValue)
+{
+  AdcADS1256_WriteSingleRegister(ADC_ADS1256_REGISTER_MUX, muxRegisterValue);
+  AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_SYNC);
+  AdcADS1256_SendCommand(ADC_ADS1256_COMMAND_WAKEUP);
+  AdcADS1256_WaitUntilDataIsReady();
+
+  return AdcADS1256_ReadRawSigned24BitValueSingleMode();
 }
 
 int32_t AdcADS1256_ReadRawSigned24BitValueContinuousMode(void)
@@ -247,19 +384,5 @@ int32_t AdcADS1256_ReadRawSigned24BitValueContinuousMode(void)
 
   AdcADS1256_ReleaseAdcFromSpiBus();
 
-  int32_t rawSigned24BitValue = ((int32_t)adcResponseBytes[0] << 16) |
-                                ((int32_t)adcResponseBytes[1] << 8)  |
-                                ((int32_t)adcResponseBytes[2]);
-
-  /*
-   * O ADS1256 retorna numero assinado em 24 bits.
-   * Se o bit 23 estiver setado, o valor e negativo e precisa de extensao de sinal
-   * para virar um int32_t correto.
-   */
-  if ((rawSigned24BitValue & 0x00800000L) != 0)
-  {
-    rawSigned24BitValue |= 0xFF000000L;
-  }
-
-  return rawSigned24BitValue;
+  return AdcADS1256_ConvertThreeBytesToSigned24BitValue(adcResponseBytes);
 }

@@ -283,7 +283,7 @@ static const uint8_t DisplayST7735_Font5x7[][5] =
     {0x14,0x08,0x3E,0x08,0x14}, // 42 '*'
     {0x08,0x08,0x3E,0x08,0x08}, // 43 '+'
     {0x00,0x50,0x30,0x00,0x00}, // 44 ','
-    {0x08,0x08,0x08,0x08,0x08}, // 45 '-'
+    {0x08,0x08,0x08,0x08,0x00}, // 45 '-'
     {0x00,0x60,0x60,0x00,0x00}, // 46 '.'
     {0x20,0x10,0x08,0x04,0x02}, // 47 '/'
     {0x3E,0x51,0x49,0x45,0x3E}, // 48 '0'
@@ -417,7 +417,14 @@ void DisplayST7735_DrawText(uint16_t startX, uint16_t startY, const char *text, 
 
         DisplayST7735_DrawCharacter5x7(cursorX, cursorY, *text, textColor);
 
-        cursorX += 6;
+        if (*text == ' ' || *text == '-')
+        {
+            cursorX += 5;
+        }
+        else
+        {
+            cursorX += 6;
+        }
 
         text++;
     }

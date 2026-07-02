@@ -105,60 +105,44 @@ int main(void)
   DisplayST7735_Initialize();
 
   DisplayST7735_FillScreen(DISPLAY_COLOR_BLACK);
-  DisplayST7735_DrawFilledRectangle(5, 5, 10, 10, DISPLAY_COLOR_GREEN);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  UsbCdcSerial_WriteTextBlocking("Blackpill STM32F411 + ADS1256\r\n");
-  UsbCdcSerial_WriteTextBlocking("Formato CSV: sequencia,valor_bruto\r\n");
   UsbCdcSerial_WriteTextBlocking("Inicializando ADS1256...\r\n");
-  DisplayST7735_DrawFilledRectangle(50, 5, 10, 10, DISPLAY_COLOR_WHITE);
   AdcADS1256_Initialize();
   UsbCdcSerial_WriteTextBlocking("ADS1256 OK. Iniciando leitura.\r\n");
+  UsbCdcSerial_WriteTextBlocking("Formato CSV: FRAME,seq,t,d1,d2,d3,d4\r\n");
   UsbSerialTextBuffer usbSerialTextBuffer;
   memset(&usbSerialTextBuffer, 0, sizeof(usbSerialTextBuffer));
 
   uint32_t sampleSequenceNumber = 0;
 
-  uint8_t i = 0;
-
-  DisplayST7735_DrawFilledRectangle(20, 5, 10, 10, DISPLAY_COLOR_BLUE);
   while (1)
   {
-    AdcADS1256_WaitUntilDataIsReady();
-    DisplayST7735_DrawFilledRectangle(35, 5, 10, 10, DISPLAY_COLOR_YELLOW);
-    int32_t adcRawSignedValue = AdcADS1256_ReadRawSigned24BitValueContinuousMode();
+    int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT];
+    uint32_t acquisitionTimestampMilliseconds = HAL_GetTick();
 
-
-
-
-
-    //tensão = valor_bruto × (2 × VREF / PGA) / 8388607
-    //tensão = valor_bruto × 5.0 / 8388607
-
-    //int voltage = (adcRawSignedValue*500)/8388607; erro de overflow
-    int32_t voltageMicrovolts = (int32_t)(((int64_t)adcRawSignedValue * (2 * 2.5 / 1) * 1000000) / 8388607);
-    int8_t plotValue = (int8_t)((adcRawSignedValue * 64) / 8388607)+64;
-
-    DisplayST7735_DrawPixel((uint8_t)plotValue, i, DISPLAY_COLOR_RED);
-    i++;
-    if (i>160){
-    	i=0;
-    	DisplayST7735_FillScreen(DISPLAY_COLOR_BLACK);
+    for (uint8_t channelIndex = 0U;
+         channelIndex < ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT;
+         channelIndex++)
+    {
+      adcRawSignedValues[channelIndex] =
+          AdcADS1256_ReadRawSigned24BitValueFromChannel(
+              AdcADS1256_DifferentialChannels[channelIndex].muxRegisterValue);
     }
 
-
-
-
-
-    char csvLineText[64];
+    char csvLineText[128];
     int numberOfCharactersWrittenToCsvLine = snprintf(csvLineText,
                                                        sizeof(csvLineText),
-                                                       "%lu,%ld - %d uV - %d \r\n",
+                                                       "FRAME,%lu,%lu,%ld,%ld,%ld,%ld\r\n",
                                                        (unsigned long)sampleSequenceNumber,
-                                                       (long)adcRawSignedValue, (int)voltageMicrovolts, (int)plotValue);
+                                                       (unsigned long)acquisitionTimestampMilliseconds,
+                                                       (long)adcRawSignedValues[0],
+                                                       (long)adcRawSignedValues[1],
+                                                       (long)adcRawSignedValues[2],
+                                                       (long)adcRawSignedValues[3]);
 
     if ((numberOfCharactersWrittenToCsvLine > 0) &&
         (numberOfCharactersWrittenToCsvLine < (int)sizeof(csvLineText)))
