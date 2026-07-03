@@ -8,10 +8,10 @@
 ../Core/Src/adc_ads1256.c:150:6:AdcADS1256_WaitUntilDataIsReady	8	static,ignoring_inline_asm
 ../Core/Src/adc_ads1256.c:159:6:AdcADS1256_Initialize	120	static
 ../Core/Src/adc_ads1256.c:246:13:AdcADS1256_DrawOperatingStatusOnDisplay	112	static
-../Core/Src/adc_ads1256.c:320:13:AdcADS1256_FormatFixedPointCenti	32	static
-../Core/Src/adc_ads1256.c:331:16:AdcADS1256_ConvertThreeBytesToSigned24BitValue	24	static
-../Core/Src/adc_ads1256.c:350:16:AdcADS1256_ReadRawSigned24BitValueSingleMode	24	static
-../Core/Src/adc_ads1256.c:381:9:AdcADS1256_ReadRawSigned24BitValueFromChannel	16	static
-../Core/Src/adc_ads1256.c:391:13:AdcADS1256_StartConversionOnChannel	16	static
-../Core/Src/adc_ads1256.c:401:6:AdcADS1256_ReadDifferentialChannelFrame	32	static
-../Core/Src/adc_ads1256.c:436:9:AdcADS1256_ReadRawSigned24BitValueContinuousMode	24	static
+../Core/Src/adc_ads1256.c:322:13:AdcADS1256_FormatFixedPointCenti	32	static
+../Core/Src/adc_ads1256.c:333:16:AdcADS1256_ConvertThreeBytesToSigned24BitValue	24	static
+../Core/Src/adc_ads1256.c:352:16:AdcADS1256_ReadRawSigned24BitValueSingleMode	24	static
+../Core/Src/adc_ads1256.c:383:9:AdcADS1256_ReadRawSigned24BitValueFromChannel	16	static
+../Core/Src/adc_ads1256.c:393:13:AdcADS1256_StartConversionOnChannel	16	static
+../Core/Src/adc_ads1256.c:403:6:AdcADS1256_ReadDifferentialChannelFrame	32	static
+../Core/Src/adc_ads1256.c:438:9:AdcADS1256_ReadRawSigned24BitValueContinuousMode	24	static

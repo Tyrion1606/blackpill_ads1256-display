@@ -313,8 +313,10 @@ static void AdcADS1256_DrawOperatingStatusOnDisplay(void)
            cyclingFrameRateAt1500KHzText);
   DisplayST7735_DrawText(2, 90, displayLineText, DISPLAY_COLOR_YELLOW);
 
-  DisplayST7735_DrawText(2, 105, "CSV format:", DISPLAY_COLOR_GREEN);
-  DisplayST7735_DrawText(2, 115, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
+  DisplayST7735_DrawText(2, 100, "Validado: ~1Ksps", DISPLAY_COLOR_YELLOW);
+
+  DisplayST7735_DrawText(2, 115, "CSV format:", DISPLAY_COLOR_GREEN);
+  DisplayST7735_DrawText(2, 125, "FRAME,s,t,d1,d2,d3,d4", DISPLAY_COLOR_GREEN);
 }
 
 static void AdcADS1256_FormatFixedPointCenti(char *destinationText,
