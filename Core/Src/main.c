@@ -9,8 +9,10 @@
 #include "adc_ads1256.h"
 #include "display_st7735.h"
 #include "microsecond_delay.h"
+#include "microsecond_clock.h"
 #include "usb_cdc_serial.h"
 
+#include "inttypes.h"
 #include <stdint.h>
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -83,7 +85,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-  MicrosecondDelay_Initialize();
+  MicrosecondClock_Initialize();
   Application_SetInitialPinStates();
 
   /*
@@ -100,30 +102,32 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  UsbCdcSerial_WriteTextBlocking("Inicializando ADS1256...\r\n");
+  UsbCdcSerial_WriteTextBlocking("# Inicializando ADS1256...\r\n");
   AdcADS1256_Initialize();
-  UsbCdcSerial_WriteTextBlocking("ADS1256 OK. Iniciando leitura.\r\n");
-  UsbCdcSerial_WriteTextBlocking("Formato CSV: FRAME,seq,t,d1,d2,d3,d4\r\n");
+  UsbCdcSerial_WriteTextBlocking("# ADS1256 OK. Iniciando leitura.\r\n");
+  UsbCdcSerial_WriteTextBlocking("# Formato CSV: FRAME,seq,t,d1,d2,d3,d4\r\n");
 
   uint32_t sampleSequenceNumber = 0;
 
   while (1)
   {
     int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT];
-    uint32_t acquisitionTimestampMilliseconds = HAL_GetTick();
+    uint64_t acquisitionTimestampMicroseconds = MicrosecondClock_Now();
 
     AdcADS1256_ReadDifferentialChannelFrame(adcRawSignedValues);
 
     char csvLineText[128];
     int numberOfCharactersWrittenToCsvLine = snprintf(csvLineText,
                                                        sizeof(csvLineText),
-                                                       "FRAME,%lu,%lu,%ld,%ld,%ld,%ld\r\n",
-                                                       (unsigned long)sampleSequenceNumber,
-                                                       (unsigned long)acquisitionTimestampMilliseconds,
-                                                       (long)adcRawSignedValues[0],
-                                                       (long)adcRawSignedValues[1],
-                                                       (long)adcRawSignedValues[2],
-                                                       (long)adcRawSignedValues[3]);
+                                                       "FRAME,%" PRIu32 ",%" PRIu64
+                                                       ",%" PRId32 ",%" PRId32
+                                                       ",%" PRId32 ",%" PRId32 "\r\n",
+                                                       sampleSequenceNumber,
+                                                       acquisitionTimestampMicroseconds,
+                                                       adcRawSignedValues[0],
+                                                       adcRawSignedValues[1],
+                                                       adcRawSignedValues[2],
+                                                       adcRawSignedValues[3]);
 
     if ((numberOfCharactersWrittenToCsvLine > 0) &&
         (numberOfCharactersWrittenToCsvLine < (int)sizeof(csvLineText)))
