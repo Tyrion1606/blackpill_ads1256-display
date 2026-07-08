@@ -23,7 +23,7 @@ COLUNAS = [
     "tempo_pc_s",
     "FRAME",
     "SEQ",
-    "TIME",
+    "TIME_US",
     "D1",
     "D2",
     "D3",
@@ -51,7 +51,7 @@ def imprimir_relatorio(estatisticas):
     frames = estatisticas["frames"]
     seqs = estatisticas["seqs"]
     tempos_pc = estatisticas["tempos_pc"]
-    tempos_mcu_ms = estatisticas["tempos_mcu_ms"]
+    tempos_mcu_us = estatisticas["tempos_mcu_us"]
     perdas_seq = estatisticas["perdas_seq"]
     duplicados_seq = estatisticas["duplicados_seq"]
     fora_de_ordem_seq = estatisticas["fora_de_ordem_seq"]
@@ -64,6 +64,7 @@ def imprimir_relatorio(estatisticas):
     print(f"Taxa esperada de frames: {TAXA_FRAMES_ESPERADA_HZ:.2f} Hz")
     print(f"Tolerancia usada: +/-{TOLERANCIA_TAXA_PERCENTUAL:.2f}%")
     print(f"Linhas validas gravadas: {estatisticas['linhas_validas']}")
+    print(f"Linhas de comentario ignoradas: {estatisticas['linhas_comentario']}")
     print(f"Linhas invalidas ignoradas: {estatisticas['linhas_invalidas']}")
     print(f"Bytes USB em frames validos: {estatisticas['bytes_usb_validos']}")
 
@@ -94,7 +95,7 @@ def imprimir_relatorio(estatisticas):
                   f"{perda['seq_anterior']} -> {perda['seq_atual']} "
                   f"(faltaram {perda['faltantes']} frames, "
                   f"tempo_pc={perda['tempo_pc_s']:.6f}s, "
-                  f"TIME={perda['tempo_mcu_ms']}ms)")
+                  f"TIME_US={perda['tempo_mcu_us']}us)")
         if len(perdas_seq) > 20:
             print(f"  ... mais {len(perdas_seq) - 20} saltos omitidos")
     else:
@@ -109,9 +110,9 @@ def imprimir_relatorio(estatisticas):
         vazao_usb_pc = estatisticas["bytes_usb_validos"] / duracao_pc_s
         print(f"Vazao USB media pelos frames validos: {vazao_usb_pc:.2f} bytes/s")
 
-    duracao_mcu_s = (tempos_mcu_ms[-1] - tempos_mcu_ms[0]) / 1000.0
+    duracao_mcu_s = (tempos_mcu_us[-1] - tempos_mcu_us[0]) / 1000000.0
     taxa_mcu_hz = calcular_taxa(len(frames), duracao_mcu_s)
-    print(f"Duracao pelo TIME do MCU: {duracao_mcu_s:.6f} s")
+    print(f"Duracao pelo TIME_US do MCU: {duracao_mcu_s:.6f} s")
     print(f"Taxa medida pelo MCU: {formatar_taxa(taxa_mcu_hz)}")
 
     if taxa_pc_hz is not None and taxa_mcu_hz is not None:
@@ -124,8 +125,8 @@ def imprimir_relatorio(estatisticas):
             for i in range(1, len(tempos_pc))
         ]
         intervalos_mcu_ms = [
-            tempos_mcu_ms[i] - tempos_mcu_ms[i - 1]
-            for i in range(1, len(tempos_mcu_ms))
+            (tempos_mcu_us[i] - tempos_mcu_us[i - 1]) / 1000.0
+            for i in range(1, len(tempos_mcu_us))
         ]
         intervalo_esperado_ms = 1000.0 / TAXA_FRAMES_ESPERADA_HZ
         print("\n--- Intervalos entre frames ---")
@@ -162,11 +163,12 @@ def main():
     inicio = time.time()
     estatisticas = {
         "linhas_validas": 0,
+        "linhas_comentario": 0,
         "linhas_invalidas": 0,
         "frames": [],
         "seqs": [],
         "tempos_pc": [],
-        "tempos_mcu_ms": [],
+        "tempos_mcu_us": [],
         "perdas_seq": [],
         "duplicados_seq": 0,
         "fora_de_ordem_seq": 0,
@@ -197,6 +199,11 @@ def main():
             if not linha:
                 continue
 
+            if linha.startswith("#"):
+                estatisticas["linhas_comentario"] += 1
+                print(linha)
+                continue
+
             agora = time.time()
             tempo_pc_iso = datetime.now().isoformat(timespec="milliseconds")
             tempo_pc_s = agora - inicio
@@ -206,7 +213,7 @@ def main():
             if len(partes) == 7 and partes[0] == "FRAME":
                 try:
                     seq = int(partes[1])
-                    tempo_mcu_ms = int(partes[2])
+                    tempo_mcu_us = int(partes[2])
                     dados = [int(valor) for valor in partes[3:7]]
                 except ValueError:
                     estatisticas["linhas_invalidas"] += 1
@@ -218,7 +225,7 @@ def main():
                     f"{tempo_pc_s:.6f}",
                     partes[0],
                     seq,
-                    tempo_mcu_ms,
+                    tempo_mcu_us,
                     dados[0],
                     dados[1],
                     dados[2],
@@ -235,7 +242,7 @@ def main():
                             "seq_atual": seq,
                             "faltantes": delta_seq - 1,
                             "tempo_pc_s": tempo_pc_s,
-                            "tempo_mcu_ms": tempo_mcu_ms,
+                            "tempo_mcu_us": tempo_mcu_us,
                         })
                         print(f"{linha}  <-- PERDA: faltaram {delta_seq - 1} frame(s)")
                     elif delta_seq == 0:
@@ -253,7 +260,7 @@ def main():
                 estatisticas["frames"].append(partes)
                 estatisticas["seqs"].append(seq)
                 estatisticas["tempos_pc"].append(tempo_pc_s)
-                estatisticas["tempos_mcu_ms"].append(tempo_mcu_ms)
+                estatisticas["tempos_mcu_us"].append(tempo_mcu_us)
                 estatisticas["ultimo_seq"] = seq
                 estatisticas["bytes_usb_validos"] += bytes_usb_linha
             else:

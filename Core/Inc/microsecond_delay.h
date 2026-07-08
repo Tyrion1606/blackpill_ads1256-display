@@ -6,5 +6,6 @@
 
 void MicrosecondDelay_Initialize(void);
 void MicrosecondDelay_Wait(uint32_t delayTimeInMicroseconds);
+uint32_t MicrosecondDelay_GetTimestampMicroseconds(void);
 
 #endif /* MICROSECOND_DELAY_H */

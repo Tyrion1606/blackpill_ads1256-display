@@ -173,7 +173,7 @@ void AdcADS1256_Initialize(void)
 
   if (AdcADS1256_WaitUntilDataIsReadyWithTimeout(1000U) == 0U)
   {
-    UsbCdcSerial_WriteTextBlocking("ERRO: timeout no DRDY apos RESET do ADS1256\r\n");
+    UsbCdcSerial_WriteTextBlocking("# ERRO: timeout no DRDY apos RESET do ADS1256\r\n");
     Error_Handler();
   }
 
@@ -198,7 +198,7 @@ void AdcADS1256_Initialize(void)
 
   if (AdcADS1256_WaitUntilDataIsReadyWithTimeout(1000U) == 0U)
   {
-    UsbCdcSerial_WriteTextBlocking("ERRO: timeout no DRDY apos SELFCAL do ADS1256\r\n");
+    UsbCdcSerial_WriteTextBlocking("# ERRO: timeout no DRDY apos SELFCAL do ADS1256\r\n");
     Error_Handler();
   }
 
@@ -219,7 +219,7 @@ void AdcADS1256_Initialize(void)
 
   if (muxRegisterValueReadBack != ADC_ADS1256_SELECTED_CHANNEL)
   {
-    UsbCdcSerial_WriteTextBlocking("ERRO: MUX do ADS1256 diferente do esperado\r\n");
+    UsbCdcSerial_WriteTextBlocking("# ERRO: MUX do ADS1256 diferente do esperado\r\n");
     DisplayST7735_DrawText(2, 20, "ERRO: MUX do ADS1256\ndiferente do esperado", DISPLAY_COLOR_RED);
 
     char displayMuxMessage[24];

@@ -1,2 +1,3 @@
-../Core/Src/microsecond_delay.c:3:6:MicrosecondDelay_Initialize	4	static
-../Core/Src/microsecond_delay.c:11:6:MicrosecondDelay_Wait	32	static,ignoring_inline_asm
+../Core/Src/microsecond_delay.c:6:6:MicrosecondDelay_Initialize	4	static
+../Core/Src/microsecond_delay.c:16:6:MicrosecondDelay_Wait	32	static,ignoring_inline_asm
+../Core/Src/microsecond_delay.c:28:10:MicrosecondDelay_GetTimestampMicroseconds	64	static

@@ -100,17 +100,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  UsbCdcSerial_WriteTextBlocking("Inicializando ADS1256...\r\n");
+  UsbCdcSerial_WriteTextBlocking("# Inicializando ADS1256...\r\n");
   AdcADS1256_Initialize();
-  UsbCdcSerial_WriteTextBlocking("ADS1256 OK. Iniciando leitura.\r\n");
-  UsbCdcSerial_WriteTextBlocking("Formato CSV: FRAME,seq,t,d1,d2,d3,d4\r\n");
+  UsbCdcSerial_WriteTextBlocking("# ADS1256 OK. Iniciando leitura.\r\n");
+  UsbCdcSerial_WriteTextBlocking("# Formato CSV: FRAME,seq,t_us,d1,d2,d3,d4\r\n");
 
   uint32_t sampleSequenceNumber = 0;
 
   while (1)
   {
     int32_t adcRawSignedValues[ADC_ADS1256_DIFFERENTIAL_CHANNEL_COUNT];
-    uint32_t acquisitionTimestampMilliseconds = HAL_GetTick();
+    uint32_t acquisitionTimestampMicroseconds =
+        MicrosecondDelay_GetTimestampMicroseconds();
 
     AdcADS1256_ReadDifferentialChannelFrame(adcRawSignedValues);
 
@@ -119,7 +120,7 @@ int main(void)
                                                        sizeof(csvLineText),
                                                        "FRAME,%lu,%lu,%ld,%ld,%ld,%ld\r\n",
                                                        (unsigned long)sampleSequenceNumber,
-                                                       (unsigned long)acquisitionTimestampMilliseconds,
+                                                       (unsigned long)acquisitionTimestampMicroseconds,
                                                        (long)adcRawSignedValues[0],
                                                        (long)adcRawSignedValues[1],
                                                        (long)adcRawSignedValues[2],
